@@ -38,7 +38,7 @@ train_configs = [
         "data_split": [.8, .1, .1],
         "num_workers": 0,
 
-        "epochs": 2,
+        "epochs": 2, # change to 1000 for full training
         "val_freq": 2,
         "sched_patience": 20,
         "val_patience": 40,
