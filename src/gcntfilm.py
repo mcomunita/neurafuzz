@@ -5,7 +5,7 @@ import src.utils as utils
 
 
 """
-Temporal FiLM layer - Conditional
+Temporal FiLM layer with conditioning
 """
 class TFiLM(torch.nn.Module):
     def __init__(self,
@@ -85,19 +85,13 @@ class TFiLM(torch.nn.Module):
 
         return x_out
 
-    # def detach_state(self):
-    #     if self.hidden_state.__class__ == tuple:
-    #         self.hidden_state = tuple([h.clone().detach() for h in self.hidden_state])
-    #     else:
-    #         self.hidden_state = self.hidden_state.clone().detach()
-
     def reset_state(self):
         # print("Reset Hidden State")
         self.hidden_state = None
 
 
 """ 
-Gated convolutional layer, zero pads and then applies a causal convolution to the input
+Gated Convolution Layer
 """
 class GatedConv1d(torch.nn.Module):
     def __init__(self,
@@ -161,9 +155,7 @@ class GatedConv1d(torch.nn.Module):
 
 
 """ 
-Gated convolutional neural net block, applies successive gated convolutional layers to the input, a total of 'layers'
-layers are applied, with the filter size 'kernel_size' and the dilation increasing by a factor of 'dilation_growth' for
-each successive layer.
+Gated Convolution Block
 """
 class GCNBlock(torch.nn.Module):
     def __init__(self,
@@ -211,16 +203,7 @@ class GCNBlock(torch.nn.Module):
 
 
 """ 
-Gated Convolutional Neural Net class, based on the 'WaveNet' architecture, takes a single channel of audio as input and
-produces a single channel of audio of equal length as output. one-sided zero-padding is used to ensure the network is 
-causal and doesn't reduce the length of the audio.
-
-Made up of 'blocks', each one applying a series of dilated convolutions, with the dilation of each successive layer 
-increasing by a factor of 'dilation_growth'. 'layers' determines how many convolutional layers are in each block,
-'kernel_size' is the size of the filters. Channels is the number of convolutional channels.
-
-The output of the model is creating by the linear mixer, which sums weighted outputs from each of the layers in the 
-model
+Gated Convolutional Network with Temporal FiLM
 """
 class GCNTF(torch.nn.Module):
     def __init__(self,
