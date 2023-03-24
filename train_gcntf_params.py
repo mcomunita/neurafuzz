@@ -37,10 +37,10 @@ train_configs = [
         "nparams": 4,
         "sample_length": 48000*5,
         "preload": False,
-        "data_split": [.08, .01, .01],
+        "data_split": [.8, .1, .1],
         "num_workers": 0,
 
-        "epochs": 2,
+        "epochs": 1000,
         "validation_f": 2,
         "scheduler_p": 20,
         "validation_p": 40,
@@ -60,7 +60,7 @@ for idx, tconf in enumerate(train_configs):
     parser = argparse.ArgumentParser()
 
     # add PROGRAM level args
-    parser.add_argument("--model_type", type=str, default="gcntf", help="gcntf, rnn")
+    parser.add_argument("--model_type", type=str, default="gcntf", help="gcntf")
 
     # data locations, file names and config
     parser.add_argument("--label", help="device label")
@@ -296,8 +296,8 @@ for idx, tconf in enumerate(train_configs):
                     ifile = os.path.basename(sample["input_file"])[:-4]
                     ifile = f"{ifile}_{offset_in_seconds}.wav"
                     ofile = resplit("_", os.path.basename(sample["target_file"])[:-4])
-                    tfile = f"{ofile[:1]}_target_{ofile[3]}_{offset_in_seconds}.wav"
-                    pfile = f"{ofile[:1]}_pred_{ofile[3]}_{offset_in_seconds}.wav"
+                    tfile = f"{ofile[0]}_{ofile[1]}_target_{ofile[3]}_{offset_in_seconds}.wav"
+                    pfile = f"{ofile[0]}_{ofile[1]}_pred_{ofile[3]}_{offset_in_seconds}.wav"
 
                     # save
                     scipy.io.wavfile.write(os.path.join(valbest_out_path, ifile),
@@ -381,8 +381,8 @@ for idx, tconf in enumerate(train_configs):
         ifile = os.path.basename(sample["input_file"])[:-4]
         ifile = f"{ifile}_{offset_in_seconds}.wav"
         ofile = resplit("_", os.path.basename(sample["target_file"])[:-4])
-        tfile = f"{ofile[:1]}_target_{ofile[3]}_{offset_in_seconds}.wav"
-        pfile = f"{ofile[:1]}_pred_{ofile[3]}_{offset_in_seconds}.wav"
+        tfile = f"{ofile[0]}_{ofile[1]}_target_{ofile[3]}_{offset_in_seconds}.wav"
+        pfile = f"{ofile[0]}_{ofile[1]}_pred_{ofile[3]}_{offset_in_seconds}.wav"
 
         # save
         scipy.io.wavfile.write(os.path.join(test_final_out_path, ifile),
@@ -436,8 +436,8 @@ for idx, tconf in enumerate(train_configs):
         ifile = os.path.basename(sample["input_file"])[:-4]
         ifile = f"{ifile}_{offset_in_seconds}.wav"
         ofile = resplit("_", os.path.basename(sample["target_file"])[:-4])
-        tfile = f"{ofile[:1]}_target_{ofile[3]}_{offset_in_seconds}.wav"
-        pfile = f"{ofile[:1]}_pred_{ofile[3]}_{offset_in_seconds}.wav"
+        tfile = f"{ofile[0]}_{ofile[1]}_target_{ofile[3]}_{offset_in_seconds}.wav"
+        pfile = f"{ofile[0]}_{ofile[1]}_pred_{ofile[3]}_{offset_in_seconds}.wav"
 
         # save
         scipy.io.wavfile.write(os.path.join(test_valbest_out_path, ifile),

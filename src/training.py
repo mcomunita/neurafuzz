@@ -53,7 +53,7 @@ class PreEmph(nn.Module):
         # zero pad the input/target so the filtered signal is the same length
         output = torch.cat((torch.zeros(self.zPad, output.shape[1], 1), output))
         target = torch.cat((torch.zeros(self.zPad, target.shape[1], 1), target))
-        # Apply pre-emph filter, permute because the dimension order is different for RNNs and Convs in pytorch...
+        # apply pre-emph filter
         output = self.conv_filter(output.permute(1, 2, 0))
         target = self.conv_filter(target.permute(1, 2, 0))
 
