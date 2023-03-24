@@ -24,7 +24,9 @@ That is the model used to export the Neutone model.
 
 
 ## Neutone Model
-To export the neutone model you can run ```src/gcntfilm_neutone_fuzzring.py```.
+The final model to run on the neutone plugin is ```export_model/model_fuzzring_v1.0.0.nm```
+
+To export again the neutone model you can run ```src/gcntfilm_neutone_fuzzring.py```.
 
 
 ## Dataset
