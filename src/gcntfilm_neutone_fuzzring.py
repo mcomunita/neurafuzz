@@ -6,7 +6,7 @@ import pathlib
 import torch
 import torchaudio
 from typing import List, Dict, Optional
-from torch import Tensor, nn
+from torch import Tensor
 from neutone_sdk import NeutoneParameter, WaveformToWaveformBase
 from neutone_sdk.utils import save_neutone_model
 
@@ -14,6 +14,7 @@ from neutone_sdk.utils import save_neutone_model
 """
 Temporal Featurewise Linear Modulation
 """
+
 
 class TFiLM(torch.nn.Module):
     def __init__(self,
@@ -67,7 +68,7 @@ class TFiLM(torch.nn.Module):
         x_down = x_down.permute(2, 0, 1)
 
         # modulation sequence
-        if self.first_run: # state was reset
+        if self.first_run:  # state was reset
             x_norm, self.hidden_state = self.lstm(x_down, None)
             self.first_run = False
         else:
@@ -97,15 +98,6 @@ class TFiLM(torch.nn.Module):
         self.first_run = True
 
 
-# def center_crop(x: Tensor, length: int) -> Tensor:
-#     if x.size(-1) != length:
-#         assert x.size(-1) > length
-#         start = (x.size(-1) - length) // 2
-#         stop = start + length
-#         x = x[..., start:stop]
-#     return x
-
-
 # def causal_crop(x: Tensor, length: int) -> Tensor:
 #     if x.size(-1) != length:
 #         assert x.size(-1) > length
@@ -116,7 +108,7 @@ class TFiLM(torch.nn.Module):
 
 
 # TODO(cm): optimize for TorchScript
-class PaddingCached(nn.Module):
+class PaddingCached(torch.nn.Module):
     """Cached padding for cached convolutions."""
 
     def __init__(self, n_ch: int, padding: int) -> None:
@@ -137,7 +129,7 @@ class PaddingCached(nn.Module):
         return x
 
 
-class Conv1dCached(nn.Module):  # Conv1d with cache
+class Conv1dCached(torch.nn.Module):  # Conv1d with cache
     """Cached causal convolution for streaming."""
 
     def __init__(self,
@@ -152,13 +144,13 @@ class Conv1dCached(nn.Module):  # Conv1d with cache
         assert padding == 0  # We include padding in the constructor to match the Conv1d constructor
         padding = (kernel_size - 1) * dilation
         self.pad = PaddingCached(in_channels, padding)
-        self.conv = nn.Conv1d(in_channels,
-                              out_channels,
-                              (kernel_size,),
-                              (stride,),
-                              padding=0,
-                              dilation=(dilation,),
-                              bias=bias)
+        self.conv = torch.nn.Conv1d(in_channels,
+                                    out_channels,
+                                    (kernel_size,),
+                                    (stride,),
+                                    padding=0,
+                                    dilation=(dilation,),
+                                    bias=bias)
 
     def forward(self, x: Tensor) -> Tensor:
         # n_samples = x.size(-1)
@@ -171,6 +163,8 @@ class Conv1dCached(nn.Module):  # Conv1d with cache
 """
 Gated Conv1d
 """
+
+
 class GatedConv1d(torch.nn.Module):
     def __init__(self,
                  in_ch,
@@ -190,7 +184,6 @@ class GatedConv1d(torch.nn.Module):
         # Layers: Conv1D -> Activations -> TFiLM -> Mix + Residual
 
         self.conv = Conv1dCached(in_channels=in_ch,
-        # self.conv = nn.Conv1d(in_channels=in_ch,
                                  out_channels=out_ch * 2,
                                  kernel_size=kernel_size,
                                  stride=1,
@@ -201,11 +194,11 @@ class GatedConv1d(torch.nn.Module):
                            nparams=nparams,
                            block_size=tfilm_block_size)
 
-        self.mix = nn.Conv1d(in_channels=out_ch,
-                             out_channels=out_ch,
-                             kernel_size=1,
-                             stride=1,
-                             padding=0)
+        self.mix = torch.nn.Conv1d(in_channels=out_ch,
+                                   out_channels=out_ch,
+                                   kernel_size=1,
+                                   stride=1,
+                                   padding=0)
 
     def forward(self, x, p: Optional[Tensor] = None):
         residual = x
@@ -236,6 +229,8 @@ class GatedConv1d(torch.nn.Module):
 """ 
 GCN Block
 """
+
+
 class GCNBlock(torch.nn.Module):
     def __init__(self,
                  in_ch,
@@ -283,6 +278,8 @@ class GCNBlock(torch.nn.Module):
 """ 
 Gated Convolution Network with Temporal FiLM layers
 """
+
+
 class GCNTF(torch.nn.Module):
     def __init__(self,
                  nparams=0,
@@ -334,7 +331,7 @@ class GCNTF(torch.nn.Module):
             z[:,
                 n * self.nchannels * self.nlayers:
                 (n + 1) * self.nchannels * self.nlayers,
-            :] = zn
+              :] = zn
 
         # back to [length, batch, channels]
         # return self.blocks[-1](z).permute(2, 0, 1)
@@ -350,15 +347,17 @@ class GCNTF(torch.nn.Module):
 """
 NEUTONE WRAPPER
 """
+
+
 class ModelWrapper(WaveformToWaveformBase):
     def __init__(self, model) -> None:
         super().__init__(model)
         self.SR = int(48000)
-        self.BIAS = float(1.0) # hardwire bias value the model was trained on
-        self.SENS = float(1.0) # hardwire sensitivity value the model was trained on
-        self.phi0 = float(0.0) # oscillator initial phase
+        self.BIAS = float(1.0)  # hardwire bias value the model was trained on
+        self.SENS = float(1.0)  # hardwire sensitivity value the model was trained on
+        self.phi0 = float(0.0)  # oscillator initial phase
         self.MIN_FREQ = float(20.0)    # min oscillator frequency
-        self.MAX_FREQ = float(500.0) # max oscill. frequency
+        self.MAX_FREQ = float(500.0)  # max oscill. frequency
 
     def get_model_name(self) -> str:
         return "NeuraFuzz"
@@ -419,27 +418,27 @@ class ModelWrapper(WaveformToWaveformBase):
         return []  # Supports all buffer sizes
 
     @torch.jit.export
-    def denormalise_param(self, 
-                          norm_val: Tensor, 
-                          min_val: float, 
+    def denormalise_param(self,
+                          norm_val: Tensor,
+                          min_val: float,
                           max_val: float
-    ) -> Tensor:
+                          ) -> Tensor:
         return (norm_val * (max_val - min_val)) + min_val
-    
+
     @torch.jit.export
-    def ring_modulation(self, 
-                        nsamples: int, 
-                        amplitude: Tensor, 
-                        frequency: Tensor, 
-                        phi0: float, 
+    def ring_modulation(self,
+                        nsamples: int,
+                        amplitude: Tensor,
+                        frequency: Tensor,
+                        phi0: float,
                         sample_rate: int
-    ) -> Tensor:
+                        ) -> Tensor:
         time = torch.arange(nsamples)/sample_rate
         phases = 2 * math.pi * frequency * time + phi0
-        self.phi0 = float(phases[-1]) # save last phase for next buffer
+        self.phi0 = float(phases[-1])  # save last phase for next buffer
         # mod = amplitude * torch.sin(phases)
         mod = torch.sin(phases)
-        return mod.unsqueeze(0) # modulation sequence
+        return mod.unsqueeze(0)  # modulation sequence
 
     def do_forward_pass(self, x: Tensor, params: Dict[str, Tensor]) -> Tensor:
         gain, fuzz, ring, freq = params["GAIN"], params["FUZZ"], params["RING"], params["FREQ"]
@@ -450,22 +449,22 @@ class ModelWrapper(WaveformToWaveformBase):
         sens = torch.ones_like(params["GAIN"]) * self.SENS
 
         params = torch.stack([bias, gain, sens, fuzz], dim=-1)
-        
-        x_fuzz = x.unsqueeze(0) # (1, 1, buffer_size)
+
+        x_fuzz = x.unsqueeze(0)  # (1, 1, buffer_size)
         x_fuzz = self.model.forward(x_fuzz, params)
         x_fuzz = x_fuzz.squeeze(0)
-        
+
         # RING MODULATOR (apply to clean signal - sounds better)
         buffer_size = x.shape[-1]
         freq = self.denormalise_param(freq, self.MIN_FREQ, self.MAX_FREQ)
         mod = self.ring_modulation(buffer_size, ring, freq, self.phi0, self.SR)
         x_mod = x * mod
-        
+
         # mix fuzz and ring (gains to compensate loudness difference)
         return 0.5 * (1 - ring) * x_fuzz + 2.0 * ring * x_mod
 
     def reset_model(self) -> bool:
-        self.model.reset_states() # reset all TFiLM layers
+        self.model.reset_states()  # reset all TFiLM layers
         return True
 
 
@@ -486,10 +485,10 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--model", default="results/1-GCNTF3-fuzz__1-10-16-3-2-128__prefilt-None-bs6/model_best.json")
     parser.add_argument("-o", "--output", default="export_model")
     args = parser.parse_args()
-    
+
     model_path = args.model
     root_dir = pathlib.Path(args.output)
-    
+
     with open(model_path, "r") as in_f:
         model_data = json.load(in_f)
 
