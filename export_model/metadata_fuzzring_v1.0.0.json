@@ -1,0 +1,67 @@
+{
+    "model_name": "NeuraFuzz",
+    "model_authors": [
+        "Marco Comunit\u00e0"
+    ],
+    "model_version": "1.0.0",
+    "model_short_description": "Neural fuzz + Ring modulator",
+    "model_long_description": "Neural fuzz distortion trained on an analogue fuzz circuit I designed + DSP ring modulator to add extra oomph",
+    "technical_description": "This neural fuzz was designed firstly as an analogue circuit. Training data was generated from Spice circuit simulation and used to train a gated convolution network with temporal film modulation. Designed mainly for guitar",
+    "technical_links": {
+        "Paper": "https://arxiv.org/abs/2211.00497",
+        "Code": "https://github.com/mcomunita/gcn-tfilm",
+        "Website": "https://mcomunita.github.io/gcn-tfilm_page"
+    },
+    "tags": [
+        "fuzz",
+        "distortion",
+        "overdrive"
+    ],
+    "citation": "Comunit{\\`a}, M. et al (2022). Modelling black-box audio effects with time-varying feature modulation. arXiv preprint arXiv:2211.00497.",
+    "is_experimental": false,
+    "neutone_parameters": {
+        "p1": {
+            "name": "GAIN",
+            "description": "gain",
+            "type": "knob",
+            "used": "True",
+            "default_value": "0.1"
+        },
+        "p2": {
+            "name": "FUZZ",
+            "description": "fuzz",
+            "type": "knob",
+            "used": "True",
+            "default_value": "0.5"
+        },
+        "p3": {
+            "name": "RING",
+            "description": "fuzz/ring mod mix",
+            "type": "knob",
+            "used": "True",
+            "default_value": "0.0"
+        },
+        "p4": {
+            "name": "FREQ",
+            "description": "ring modulator frequency",
+            "type": "knob",
+            "used": "True",
+            "default_value": "0.0"
+        }
+    },
+    "wet_default_value": 1.0,
+    "dry_default_value": 0.0,
+    "input_gain_default_value": 0.5,
+    "output_gain_default_value": 0.5,
+    "is_input_mono": true,
+    "is_output_mono": true,
+    "model_type": "mono-mono",
+    "native_sample_rates": [
+        48000
+    ],
+    "native_buffer_sizes": [],
+    "look_behind_samples": 0,
+    "sdk_version": "1.1.2",
+    "pytorch_version": "1.11.0",
+    "date_created": 1679084952.62931
+}
