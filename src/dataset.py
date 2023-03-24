@@ -9,13 +9,6 @@ from re import split as resplit
 from natsort import natsorted
 
 
-def rand(low=0, high=1):
-    return (torch.rand(1).numpy()[0] * (high - low)) + low
-
-
-def randint(low=0, high=1):
-    return torch.randint(low, high + 1, (1,)).numpy()[0]
-
 
 class FuzzDataset(torch.utils.data.Dataset):
     def __init__(self,
@@ -50,10 +43,7 @@ class FuzzDataset(torch.utils.data.Dataset):
                 input, sr = torchaudio.load(ifile, normalize=False)
 
             for tidx, tfile in enumerate(self.target_files):
-                # print(tfile)
-
                 tmd = torchaudio.info(tfile)
-                # num_frames = md.num_frames # num samples
                 num_frames = int(np.min([imd.num_frames, tmd.num_frames]))
                 self.tot_frames += num_frames
 

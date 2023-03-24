@@ -264,7 +264,6 @@ class GCNTF(torch.nn.Module):
     def forward(self, x, p=None):
         # print("GCN: ", x.shape)
         # x.shape = [length, batch, channels]
-        # x = x.permute(1, 2, 0)  # change to [batch, channels, length]
         z = torch.empty([x.shape[0], self.blocks[-1].in_channels, x.shape[2]])
 
         for n, block in enumerate(self.blocks[:-1]):
@@ -275,14 +274,7 @@ class GCNTF(torch.nn.Module):
               :] = zn
 
         # back to [length, batch, channels]
-        # return self.blocks[-1](z).permute(2, 0, 1)
         return self.blocks[-1](z)
-
-    # def detach_states(self):
-    #     # print("DETACH STATES")
-    #     for layer in self.modules():
-    #         if isinstance(layer, TFiLM):
-    #             layer.detach_state()
 
     # reset state for all TFiLM layers
     def reset_states(self):
@@ -455,9 +447,10 @@ class GCNTF(torch.nn.Module):
 
     def save_model(self,
                    file_name,
-                   direc=""):
-        if direc:
-            utils.dir_check(direc)
+                   dir,
+                   save_statedict=False):
+        if dir:
+            utils.dir_check(dir)
 
         model_data = {"model_data": {"model_type": "gcntf",
                                      "nparams": self.nparams,
@@ -468,13 +461,13 @@ class GCNTF(torch.nn.Module):
                                      "dilation_growth": self.dilation_growth,
                                      "tfilm_block_size": self.tfilm_block_size}}
 
-        if self.save_state:
+        if save_statedict:
             model_state = self.state_dict()
             for each in model_state:
                 model_state[each] = model_state[each].tolist()
             model_data["state_dict"] = model_state
 
-        utils.json_save(model_data, file_name, direc)
+        utils.json_save(model_data, file_name, dir)
 
 
     def compute_receptive_field(self):
@@ -491,9 +484,9 @@ class GCNTF(torch.nn.Module):
     def add_model_specific_args(parent_parser):
         parser = argparse.ArgumentParser(parents=[parent_parser], add_help=False)
         # --- model related ---
-        parser.add_argument('--nparams', type=int, default=0)
-        parser.add_argument('--nblocks', type=int, default=2)
-        parser.add_argument('--nlayers', type=int, default=9)
+        parser.add_argument('--nparams', type=int, default=4)
+        parser.add_argument('--nblocks', type=int, default=1)
+        parser.add_argument('--nlayers', type=int, default=10)
         parser.add_argument('--nchannels', type=int, default=16)
         parser.add_argument('--kernel_size', type=int, default=3)
         parser.add_argument('--dilation_growth', type=int, default=2)
