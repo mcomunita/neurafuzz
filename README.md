@@ -32,6 +32,8 @@ python3 -m pip install -r requirements.txt
 ## Export Neutone Model
 To export again the neutone model you can run ```src/gcntfilm_neutone_fuzzring.py```.
 
+Make sure you have ```torch==1.11.0``` and ```torchaudio==0.11.0``` versions installed.
+
 
 ## Modify the NeuraFuzz
 In the current implementation NeuraFuzz includes the neural network that was trained on distortion, as well as a DSP implementation of a Ring Modulator. You can experiment with both. You can either train a new neural network on your favourite distortion, or you can modify the DSP code. Maybe you want to improve the ring modulator, or replace it with another effect.
