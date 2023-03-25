@@ -4,7 +4,8 @@
 
 <div  align="center">
 
-[Paper](https://arxiv.org/abs/2211.00497) | [Dataset (restricted access)](https://zenodo.org/record/7766959)
+[Video Demo](https://youtu.be/KhpE9VFIj_k) | [Paper](https://arxiv.org/abs/2211.00497) | [Dataset (restricted access)](https://zenodo.org/record/7766959)
+
 
 </div>
 
